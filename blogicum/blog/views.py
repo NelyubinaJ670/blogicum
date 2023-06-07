@@ -85,8 +85,7 @@ def post_profile(request, username_slug):
         User.objects.filter(username=username_slug)
     )
     post_list = Post.objects.filter(
-        author=user.id
-        ).order_by("-pub_date")
+        author=user.id).order_by("-pub_date")
     paginator = Paginator(post_list, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
