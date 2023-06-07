@@ -56,18 +56,26 @@ class Post(PublishedCreatedModel, TitleModel):
         User,
         verbose_name='Автор публикации',
         on_delete=models.CASCADE,
+        related_name='posts_user',
     )
     location = models.ForeignKey(
         Location,
         verbose_name='Местоположение',
         on_delete=models.SET_NULL,
-        null=True
+        null=True,
+        blank=True,
     )
     category = models.ForeignKey(
         Category,
         verbose_name='Категория',
+        related_name='posts',
         on_delete=models.SET_NULL,
-        null=True
+        null=True,
+    )
+    image = models.ImageField(
+        'Изображение',
+        upload_to='post_images',
+        blank=True
     )
 
     class Meta:
@@ -76,3 +84,23 @@ class Post(PublishedCreatedModel, TitleModel):
 
     def __str__(self):
         return self.title
+
+
+class Comment(models.Model):
+    """ Комментарии. """
+    text = models.TextField('Текст комментария')
+    post = models.ForeignKey(
+        Post,
+        on_delete=models.CASCADE,
+        related_name='comments',
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    class Meta:
+        ordering = ('created_at',)
+        verbose_name = 'комментарий'
+        verbose_name_plural = 'Комментарии'
+
+    def __str__(self):
+        return self.text

@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'debug_toolbar',
+    'django_bootstrap5',
 ]
 
 MIDDLEWARE = [
@@ -61,7 +62,7 @@ MIDDLEWARE = [
 
 INTERNAL_IPS = [
     '127.0.0.1',
-] 
+]
 
 ROOT_URLCONF = 'blogicum.urls'
 
@@ -144,3 +145,20 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Место сохранения для пользовательских файлов
+MEDIA_ROOT = BASE_DIR / 'media'
+
+# Подключаем бэкенд filebased.EmailBackend:
+EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+
+# Директория, в которую будут сохраняться файлы писем:
+EMAIL_FILE_PATH = BASE_DIR / 'sent_emails'
+
+LOGIN_URL = 'login'
+
+# сюда времмено перенаправляем после схода на сайт
+LOGIN_REDIRECT_URL = 'blog:index'
+
+# Константа для ошибки 403
+CSRF_FAILURE_VIEW = 'pages.views.csrf_failure'
