@@ -13,6 +13,8 @@ from .models import Category, Post, Comment
 
 from .forms import PostForm, CommentForm, UserForm
 
+NUMBER_OF_POSTS = 10
+
 
 def post_filter():
     """ Фильтр для отбора постов. """
@@ -26,6 +28,14 @@ def post_filter():
     )
 
 
+def paginator_page_obj(request, posts):
+    """ Пагинатор. """
+    paginator = Paginator(posts, NUMBER_OF_POSTS)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return page_obj
+
+
 @login_required
 def index(request):
     """ Главная страница проекта. """
@@ -35,9 +45,7 @@ def index(request):
         .order_by('-pub_date')
         .annotate(comment_count=Count('comments'))
     )
-    paginator = Paginator(post_list, 10)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    page_obj = paginator_page_obj(request, post_list)
     context = {'page_obj': page_obj}
     return render(request, template, context)
 
@@ -50,10 +58,11 @@ def post_detail(request, id):
         post_filter(),
         pk=id,
     )
+    comments = post_list.comments.all()
     context = {
         'post': post_list,
         'form': CommentForm(),
-        'comments': Comment.objects.filter(post_id=id),
+        'comments': comments,
     }
     return render(request, template, context)
 
@@ -66,11 +75,12 @@ def category_posts(request, category_slug):
         Category.objects.filter(slug=category_slug), is_published=True
     )
     post_list = (
-        post_filter().order_by("-pub_date").filter(category=category)
+        post_filter().order_by(
+            '-pub_date'
+            ).filter(category=category
+                     ).annotate(comment_count=Count('comments'))
     )
-    paginator = Paginator(post_list, 10)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    page_obj = paginator_page_obj(request, post_list)
     context = {
         'category': category,
         'page_obj': page_obj,
@@ -85,10 +95,9 @@ def post_profile(request, username_slug):
         User.objects.filter(username=username_slug)
     )
     post_list = Post.objects.filter(
-        author=user.id).order_by("-pub_date")
-    paginator = Paginator(post_list, 10)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+        author=user.id).order_by(
+        '-pub_date').annotate(comment_count=Count('comments'))
+    page_obj = paginator_page_obj(request, post_list)
     context = {
         'profile': user,
         'page_obj': page_obj,
@@ -141,6 +150,7 @@ class UserUpdateView(LoginRequiredMixin, UpdateView):
 
 class CommentCreateView(LoginRequiredMixin, CreateView):
     """ Создания комментария. """
+
     model = Comment
     form_class = CommentForm
 

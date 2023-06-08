@@ -1,9 +1,38 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 
-from core.models import PublishedCreatedModel, TitleModel
-
 User = get_user_model()
+
+
+class PublishedCreatedModel(models.Model):
+    """
+    Абстрактная модель.
+    Добавляет флаг is_published и
+    дату добавления публикации created_at.
+    """
+    is_published = models.BooleanField(
+        'Опубликовано',
+        default=True,
+        help_text='Снимите галочку, чтобы скрыть публикацию.'
+    )
+    created_at = models.DateTimeField(
+        'Добавлено',
+        auto_now_add=True
+    )
+
+    class Meta:
+        abstract = True
+
+
+class TitleModel(models.Model):
+    """Абстрактная модель заголовка."""
+    title = models.CharField(
+        'Заголовок',
+        max_length=256
+    )
+
+    class Meta:
+        abstract = True
 
 
 class Category(PublishedCreatedModel, TitleModel):
@@ -56,7 +85,6 @@ class Post(PublishedCreatedModel, TitleModel):
         User,
         verbose_name='Автор публикации',
         on_delete=models.CASCADE,
-        related_name='posts_user',
     )
     location = models.ForeignKey(
         Location,
@@ -68,7 +96,6 @@ class Post(PublishedCreatedModel, TitleModel):
     category = models.ForeignKey(
         Category,
         verbose_name='Категория',
-        related_name='posts',
         on_delete=models.SET_NULL,
         null=True,
     )
@@ -79,6 +106,7 @@ class Post(PublishedCreatedModel, TitleModel):
     )
 
     class Meta:
+        default_related_name = 'posts'
         verbose_name = 'публикация'
         verbose_name_plural = 'Публикации'
 
@@ -103,4 +131,4 @@ class Comment(models.Model):
         verbose_name_plural = 'Комментарии'
 
     def __str__(self):
-        return self.text
+        return self.text[:15]
