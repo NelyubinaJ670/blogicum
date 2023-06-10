@@ -77,8 +77,8 @@ def category_posts(request, category_slug):
     post_list = (
         post_filter().order_by(
             '-pub_date'
-            ).filter(category=category
-                     ).annotate(comment_count=Count('comments'))
+             ).filter(category=category
+                      ).annotate(comment_count=Count('comments'))
     )
     page_obj = paginator_page_obj(request, post_list)
     context = {
